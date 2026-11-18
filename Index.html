@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control Operativo ASG | Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    :root { --sharf-dark: #68002B; --sharf-light: #FF6568; --bg-main: #f4f6f9; }
+    body { background-color: var(--bg-main); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    
+    .navbar-sharf { background: linear-gradient(135deg, var(--sharf-dark) 0%, #4a001e 100%); padding: 0.6rem 2rem; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .brand-title { font-weight: 700; font-size: 1.15rem; margin: 0; }
+    
+    .logo-container-white { background-color: #ffffff; padding: 4px 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; margin-right: 15px; }
+    .brand-logo-img { max-height: 32px; width: auto; }
+    
+    .nav-pills .nav-link { color: #555; font-weight: 600; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; border: 1px solid transparent; }
+    .nav-pills .nav-link.active { background-color: var(--sharf-light); color: white; border-color: var(--sharf-light); }
+    
+    .table-container { background: white; border-radius: 10px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .table { font-size: 0.85rem; }
+    .table thead th { background-color: #f8f9fa; color: #495057; text-transform: uppercase; font-size: 0.72rem; border-bottom: 2px solid #dee2e6; white-space: nowrap; }
+    .table tbody td { vertical-align: middle; padding: 0.55rem 0.4rem; }
+    
+    .badge-estatus { padding: 4px 10px; border-radius: 15px; font-weight: 700; font-size: 0.68rem; text-transform: uppercase; }
+    .bg-0 { background: #ffebee; color: #c62828; }
+    .bg-rev { background: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+    .bg-2 { background: #e8f5e9; color: #2e7d32; }
+    
+    .avatar-circle { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background-color: #e9ecef; color: #495057; font-size: 0.65rem; font-weight: bold; margin-right: 5px; }
+    .kpi-card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }
+    
+    #toast-msg { position: fixed; bottom: 20px; right: 20px; z-index: 1050; display: none; }
+  </style>
+</head>
+<body>
+
+<div id="toast-msg" class="alert alert-success shadow text-dark fw-bold border-0">
+  <i class="bi bi-check-circle-fill me-2 text-success"></i> <span id="toast-text">Acción ejecutada correctamente</span>
+</div>
+
+<nav class="navbar-sharf d-flex justify-content-between align-items-center">
+  <div class="d-flex align-items-center">
+    <div class="logo-container-white">
+      <img src="https://lh3.googleusercontent.com/d/1elH2pM7BNNj7ZkmfsxHFI2nLDhLQ4WPF" alt="Logo Shārf" class="brand-logo-img" onerror="this.style.display='none'">
+    </div>
+    <h1 class="brand-title">Control Operativo ASG</h1>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <select id="switch-modo-prueba" class="form-select form-select-sm fw-bold border-0 bg-warning text-dark" style="width:160px; font-size:0.8rem;" onchange="cambiarConfiguracionGlobal()">
+      <option value="true">⚠️ Modo Borrador</option>
+      <option value="false">🚀 En Vivo (Real)</option>
+    </select>
+  </div>
+</nav>
+
+<div class="container-fluid py-3 px-4">
+  <ul class="nav nav-pills mb-3 gap-2" id="pills-tab" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#panel-resumen" type="button"><i class="bi bi-grid-1x2-fill me-1"></i> 1. Resumen Global</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#panel-evaluacion" type="button"><i class="bi bi-table me-1"></i> 📊 Matriz de Evaluación</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#panel-asignar-indicadores" type="button" onclick="cargarResponsablesSelect()"><i class="bi bi-clipboard-check-fill me-1"></i> 📋 Asignar Indicadores</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#panel-alertas" type="button" style="background-color:#fff3e0; color:#e65100;" onclick="cargarConfiguracionAlertas()"><i class="bi bi-envelope-exclamation-fill me-1"></i> 3. Programar Alertas Diarias (9 AM)</button></li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="panel-resumen">
+      <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="kpi-card"><h6 class="text-muted">Total Indicadores</h6><h3 class="fw-bold text-dark" id="kpi-total">0</h3></div></div>
+        <div class="col-md-3"><div class="kpi-card"><h6 class="text-success">Cumplidos</h6><h3 class="fw-bold text-success" id="kpi-cumplidos">0</h3></div></div>
+        <div class="col-md-3"><div class="kpi-card"><h6 class="text-warning">En Revisión / Parcial</h6><h3 class="fw-bold text-warning" id="kpi-revision">0</h3></div></div>
+        <div class="col-md-3"><div class="kpi-card"><h6 class="text-danger">Pendientes</h6><h3 class="fw-bold text-danger" id="kpi-pendientes">0</h3></div></div>
+      </div>
+      
+      <div class="card p-3 border-0 shadow-sm mb-3">
+        <h6 class="fw-bold text-dark"><i class="bi bi-link-45deg"></i> Configuración del Enlace Base del WebApp</h6>
+        <p class="text-muted" style="font-size:0.75rem; margin:0 0 8px 0;">Pega aquí la URL de tu implementación web app ("Implementación de Prueba" o "Producción") para asegurar el ruteo directo.</p>
+        <div class="input-group input-group-sm">
+          <input type="url" id="url-manual-config" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+          <button class="btn btn-primary fw-bold" type="button" onclick="cambiarConfiguracionGlobal()">Guardar Enlace Base</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="panel-evaluacion">
+      <div class="table-container">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <h6 class="fw-bold m-0 text-secondary me-2">Control de Evidencias ASG</h6>
+            <button class="btn btn-sm btn-outline-success fw-bold me-1" onclick="evaluarGrupoSeleccionados()"><i class="bi bi-ui-checks me-1"></i> Evaluar Agrupados</button>
+            <button class="btn btn-sm btn-outline-danger fw-bold" onclick="prepararEnvioMasivoSeleccionados()"><i class="bi bi-send-check-fill me-1"></i> Enviar Alertas Seleccionadas</button>
+          </div>
+          
+          <div class="d-flex align-items-center gap-2">
+            <select id="filtro-anio" class="form-select form-select-sm" style="width: auto;" onchange="filtrarTabla()">
+              <option value="">📅 Todos los Años</option>
+            </select>
+
+            <select id="filtro-periodo" class="form-select form-select-sm" style="width: auto;" onchange="filtrarTabla()">
+              <option value="">⏱️ Todos los Periodos</option>
+            </select>
+
+            <select id="filtro-estatus" class="form-select form-select-sm" style="width: auto;" onchange="filtrarTabla()">
+              <option value="">📊 Todos los Estatus</option>
+              <option value="2">🟢 Cumplido</option>
+              <option value="1">🟡 En Revisión / Parcial</option>
+              <option value="0">🔴 Pendiente</option>
+            </select>
+
+            <input type="text" id="buscador" class="form-control form-control-sm" style="width: 200px;" placeholder="🔍 Buscar Área, Resp o ID..." onkeyup="filtrarTabla()">
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle" id="tabla-datos">
+            <thead>
+              <tr>
+                <th style="width: 3%"><input type="checkbox" id="check-all" onclick="marcarTodosChecks(this)"></th>
+                <th style="width: 5%">ID</th>
+                <th style="width: 7%">Año/Periodo</th>
+                <th style="width: 17%">Área / Responsable</th>
+                <th style="width: 23%">Indicador & Subindicador</th>
+                <th style="width: 9%">Meta</th>
+                <th style="width: 10%">Evidencia</th>
+                <th style="width: 8%">Estatus</th>
+                <th style="width: 9%">Evaluar</th>
+                <th style="width: 9%">Enviar Alerta</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-indicadores">
+              <tr><td colspan="10" class="text-center py-4">Sincronizando información en vivo...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="panel-asignar-indicadores">
+      <div class="card p-4 border-0 shadow-sm mx-auto" style="max-width: 650px; border-radius: 10px;">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clipboard-plus-fill me-2 text-danger"></i> Asignación de Indicadores</h5>
+        <form id="formAsignacion">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary" style="font-size: 0.78rem;">RESPONSABLE DE ÁREA</label>
+            <select id="selectResponsable" class="form-select form-select-sm" required>
+              <option value="">-- Seleccionar Responsable --</option>
+            </select>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- PANEL DE PROGRAMACIÓN DE ALERTAS DIARIAS CON SELECCIÓN DE DESTINATARIOS -->
+    <div class="tab-pane fade" id="panel-alertas">
+      <div class="card p-4 shadow-sm mx-auto mb-4" style="max-width: 750px; border-radius: 12px;">
+        <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3">
+          <div>
+            <h5 class="mb-1 fw-bold text-dark"><i class="bi bi-clock-history me-2 text-warning"></i> Programación Automática Diaria (9:00 AM)</h5>
+            <small class="text-muted">Procesa automáticamente todos los registros pendientes cada mañana.</small>
+          </div>
+          <div class="form-check form-switch fs-4">
+            <input class="form-check-input" type="checkbox" role="switch" id="triggerToggle" onchange="toggleTrigger(this.checked)">
+            <label class="form-check-label fs-6 fw-bold ms-1" for="triggerToggle" id="toggleLabel">OFF</label>
+          </div>
+        </div>
+        
+        <div id="triggerStatusText" class="text-muted small mb-3">Cargando estado del temporizador...</div>
+
+        <div id="contenedor-destinatarios-alertas">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold text-secondary m-0" style="font-size:0.85rem;">DESTINATARIOS PENDIENTES DE ALERTA:</h6>
+            <button class="btn btn-sm btn-outline-secondary py-0" style="font-size:0.75rem;" onclick="marcarTodosExclusiones(true)">Marcar Todos</button>
+          </div>
+          <p class="text-muted" style="font-size:0.75rem;">Desmarca los destinatarios que no desees que reciban el correo automático diario de las 9:00 AM.</p>
+          
+          <div class="table-responsive border rounded p-2" style="max-height: 300px; overflow-y: auto; background: #ffffff;">
+            <table class="table table-sm align-middle mb-0" style="font-size:0.8rem;">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 5%;" class="text-center">Enviar</th>
+                  <th style="width: 10%;">ID</th>
+                  <th style="width: 30%;">Área</th>
+                  <th style="width: 25%;">Responsable</th>
+                  <th style="width: 30%;">Correo</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-destinatarios-alertas">
+                <tr><td colspan="5" class="text-center py-3 text-muted">Cargando lista de destinatarios...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="d-flex justify-content-end mt-3">
+            <button class="btn btn-sm btn-success fw-bold px-4" onclick="guardarConfiguracionExclusiones()"><i class="bi bi-save-fill me-1"></i> Guardar Selección de Destinatarios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INCLUSIÓN MODULAR DE TODOS LOS MODALES DEL ADMINISTRADOR -->
+<?!= include('ModalesAdmin'); ?>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  let cacheConfig = {};
+  let cacheIndicadores = [];
+  let cacheNotasMap = {};
+  let listaResponsablesMap = [];
+  let idsGrupoSeleccionados = [];
+  let idsExcluidosSet = new Set();
+
+  window.onload = () => {
+    cargarDashboardAdmin();
+  };
+
+  function mostrarToast(mensaje) {
+    const toast = document.getElementById('toast-msg');
+    document.getElementById('toast-text').innerText = mensaje;
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 3500);
+  }
+
+  function poblarFiltrosAnioYPeriodo(indicadores) {
+    const selectAnio = document.getElementById('filtro-anio');
+    const selectPeriodo = document.getElementById('filtro-periodo');
+
+    const aniosSet = new Set();
+    const periodosSet = new Set();
+
+    indicadores.forEach(ind => {
+      if (ind.anio) aniosSet.add(ind.anio);
+      if (ind.periodo) periodosSet.add(ind.periodo);
+    });
+
+    selectAnio.innerHTML = '<option value="">📅 Todos los Años</option>';
+    selectPeriodo.innerHTML = '<option value="">⏱️ Todos los Periodos</option>';
+
+    Array.from(aniosSet).sort().reverse().forEach(a => {
+      selectAnio.innerHTML += `<option value="${a}">${a}</option>`;
+    });
+
+    Array.from(periodosSet).sort().forEach(p => {
+      selectPeriodo.innerHTML += `<option value="${p}">${p}</option>`;
+    });
+  }
+
+  function cargarDashboardAdmin() {
+    if (typeof google === 'undefined' || !google.script) return;
+    google.script.run.withSuccessHandler(data => {
+      cacheConfig = data.config;
+      cacheIndicadores = data.indicadores;
+      cacheNotasMap = {};
+      
+      const selectModo = document.getElementById('switch-modo-prueba');
+      const esBorrador = (data.config.modoPrueba === true || String(data.config.modoPrueba).toLowerCase() === "true");
+      selectModo.value = esBorrador ? "true" : "false";
+      
+      if(esBorrador) {
+        selectModo.className = "form-select form-select-sm fw-bold border-0 bg-warning text-dark";
+      } else {
+        selectModo.className = "form-select form-select-sm fw-bold border-0 bg-success text-white";
+      }
+
+      document.getElementById('url-manual-config').value = data.config.urlManualApp || "";
+
+      poblarFiltrosAnioYPeriodo(data.indicadores);
+
+      let conteo = { total: 0, cumplidos: 0, revision: 0, pendientes: 0 };
+      const tbody = document.getElementById('tbody-indicadores');
+      tbody.innerHTML = "";
+
+      data.indicadores.forEach(ind => {
+        conteo.total++;
+        let bgClass = "bg-0", txtEstatus = "Pendiente";
+        const st = ind.estatus.toString().trim();
+        
+        if (st === "2" || st.toLowerCase() === "cumplido") { 
+          bgClass = "bg-2"; 
+          txtEstatus = "Cumplido"; 
+          conteo.cumplidos++; 
+        } else if (st === "1" || st === "En Revisión" || st.toLowerCase() === "parcial") { 
+          bgClass = "bg-rev"; 
+          txtEstatus = "En Revisión / Parcial"; 
+          conteo.revision++; 
+        } else { 
+          conteo.pendientes++; 
+        }
+        
+        let btnEvidencia = "";
+        if (ind.evidencia && ind.evidencia.toString().trim() !== "") {
+          const lineasEvidencia = ind.evidencia.toString().split(/[\n;]+/).map(e => e.trim()).filter(e => e !== "");
+          let enlacesHtml = "";
+          let notasTexto = [];
+
+          lineasEvidencia.forEach((item) => {
+            const esUrl = /^(https?:\/\/[^\s]+)/i.test(item);
+            if (esUrl) {
+              let tipoEtiqueta = "Ver Enlace";
+              if (item.includes("drive.google.com") || item.includes("docs.google.com")) {
+                tipoEtiqueta = "Ver Drive";
+              } else if (item.includes("sharepoint.com") || item.includes("onedrive")) {
+                tipoEtiqueta = "Ver Archivo";
+              }
+
+              enlacesHtml += `
+                <a href="${item}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 text-nowrap" style="font-size:0.70rem;" title="${item}">
+                  <i class="bi bi-link-45deg"></i> ${tipoEtiqueta}
+                </a>`;
+            } else {
+              notasTexto.push(item);
+            }
+          });
+
+          btnEvidencia = `<div class="d-flex flex-column gap-1">`;
+          if (enlacesHtml) btnEvidencia += enlacesHtml;
+
+          if (notasTexto.length > 0) {
+            cacheNotasMap[ind.id] = notasTexto;
+            btnEvidencia += `
+              <button type="button" class="btn btn-sm btn-warning py-0 px-2 text-dark fw-bold text-nowrap" style="font-size:0.70rem;" onclick="abrirModalVerNotas('${ind.id}')">
+                <i class="bi bi-chat-left-text-fill me-1"></i> Ver Notas (${notasTexto.length})
+              </button>`;
+          }
+
+          btnEvidencia += `</div>`;
+        } else {
+          btnEvidencia = `<button class="btn btn-sm btn-link text-decoration-none p-0 text-danger fw-bold" style="font-size:0.72rem;" onclick="abrirModalManual('${ind.id}')"><i class="bi bi-cloud-plus"></i> Subir Ad.</button>`;
+        }
+
+        const baseLink = (cacheConfig && cacheConfig.urlManualApp) 
+          ? cacheConfig.urlManualApp 
+          : "https://script.google.com/a/macros/holasharf.com/s/AKfycbyiaSFbQ9IwQs4kMaLS3eRwpSjm3D-zOIQqLjooJI653SdKaGYi-S9okf27TpJOAnqg/exec";
+          
+        const urlFinalUsuario = `${baseLink}?id=${ind.id}`;
+        const inicial = ind.responsable ? ind.responsable.charAt(0).toUpperCase() : '?';
+
+        let indHtml = `<div class="fw-bold text-dark" style="font-size:0.8rem; line-height:1.2;">${ind.indicador}</div>`;
+        if (ind.subIndicador) {
+          indHtml += `<div class="text-muted mt-1" style="font-size:0.7rem;"><i class="bi bi-arrow-return-right"></i> ${ind.subIndicador}</div>`;
+        }
+
+        const etiquetaPeriodo = (ind.anio || ind.periodo) ? `${ind.anio || ''} <span class="badge bg-secondary" style="font-size:0.65rem;">${ind.periodo || ''}</span>` : '-';
+
+        tbody.innerHTML += `
+          <tr data-anio="${ind.anio || ''}" data-periodo="${ind.periodo || ''}">
+            <td><input type="checkbox" class="check-item" value="${ind.id}"></td>
+            <td class="fw-bold text-secondary">${ind.id}</td>
+            <td class="fw-semibold text-nowrap" style="font-size:0.75rem;">${etiquetaPeriodo}</td>
+            <td>
+              <div class="fw-bold" style="font-size:0.8rem;">${ind.area}</div>
+              <div class="text-muted mt-1 d-flex align-items-center" style="font-size:0.72rem;">
+                <span class="avatar-circle">${inicial}</span> ${ind.responsable}
+              </div>
+            </td>
+            <td>${indHtml}</td>
+            <td><span class="badge bg-light text-dark border fw-normal">${ind.meta || '-'}</span></td>
+            <td>${btnEvidencia}</td>
+            <td><span class="badge-estatus ${bgClass}">${txtEstatus}</span></td>
+            <td>
+              <select class="form-select form-select-sm" style="font-size:0.72rem;" onchange="abrirModalVistaPreviaEstatus('${ind.id}', this.value); this.value='';">
+                <option value="">Evaluar</option>
+                <option value="2">🟢 Cumplido</option>
+                <option value="1">🟡 Parcial</option>
+                <option value="0">🔴 Pendiente</option>
+                <option value="Definitivo">📂 Finalizar y Archivar Histórico</option>
+              </select>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-info me-1" style="font-size:0.72rem;" onclick="ejecutarSeguimientoTempranoUnico('${ind.id}')" title="Enviar Seguimiento Temprano">📩 Seg. Temprano</button>
+              <button class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem; padding:4px 6px;" onclick="solicitarEnvioAlerta('${ind.id}')">
+                <i class="bi bi-send-fill text-warning"></i> Enviar Alerta
+              </button>
+              <button class="btn btn-sm btn-light border mt-1" style="font-size:0.65rem; padding:1px 4px; display:block;" onclick="abrirEnlaceExternoSeguro('${urlFinalUsuario}')">
+                <i class="bi bi-box-arrow-up-right"></i> Abrir Enlace
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('kpi-total').innerText = conteo.total;
+      document.getElementById('kpi-cumplidos').innerText = conteo.cumplidos;
+      document.getElementById('kpi-revision').innerText = conteo.revision;
+      document.getElementById('kpi-pendientes').innerText = conteo.pendientes;
+    }).obtenerDatosCompletos();
+  }
+
+  function cambiarConfiguracionGlobal() {
+    const selectModo = document.getElementById('switch-modo-prueba');
+    const modo = (selectModo.value === "true");
+    const urlMan = document.getElementById('url-manual-config') ? document.getElementById('url-manual-config').value : "";
+
+    selectModo.disabled = true;
+
+    google.script.run
+      .withSuccessHandler((res) => {
+        selectModo.disabled = false;
+        mostrarToast("Configuración guardada");
+      })
+      .actualizarConfiguracionWeb(modo, urlMan);
+  }
+
+  function cargarResponsablesSelect() {
+    google.script.run
+      .withSuccessHandler(function(responsables) {
+        listaResponsablesMap = responsables || [];
+        const select = document.getElementById("selectResponsable");
+        if (!select) return;
+        select.innerHTML = '<option value="">-- Seleccionar Responsable --</option>';
+        listaResponsablesMap.forEach(r => {
+          select.innerHTML += `<option value="${r.nombre}" data-correo="${r.correo}" data-area="${r.area}">${r.nombre} (${r.area})</option>`;
+        });
+      })
+      .obtenerListaResponsables();
+  }
+
+  // LÓGICA DE PROGRAMACIÓN Y EXCLUSIÓN DE ALERTAS DIARIAS
+  function cargarConfiguracionAlertas() {
+    google.script.run.withSuccessHandler(res => {
+      idsExcluidosSet = new Set((res.excluidos || []).map(x => x.toString().trim()));
+      updateToggleUI(res.enabled);
+      renderizarTablaDestinatariosAlertas();
+    }).getAlertTriggerStatus();
+  }
+
+  function updateToggleUI(isEnabled) {
+    const checkbox = document.getElementById('triggerToggle');
+    const label = document.getElementById('toggleLabel');
+    const statusText = document.getElementById('triggerStatusText');
+
+    if (checkbox) checkbox.checked = isEnabled;
+    if (label) label.innerText = isEnabled ? 'ON' : 'OFF';
+    if (statusText) {
+      statusText.innerHTML = isEnabled 
+        ? '<span class="text-success fw-bold">🟢 Alertas automáticas activadas</span> (Envío diario programado a las 9:00 AM)' 
+        : '<span class="text-danger fw-bold">🔴 Alertas automáticas desactivadas</span>';
+    }
+  }
+
+  function renderizarTablaDestinatariosAlertas() {
+    const tbody = document.getElementById('tbody-destinatarios-alertas');
+    tbody.innerHTML = "";
+
+    const pendientes = cacheIndicadores.filter(ind => {
+      const st = ind.estatus.toString().trim();
+      return st === "0" || st === "" || st.toLowerCase() === "pendiente";
+    });
+
+    if (pendientes.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center py-3 text-success fw-bold">¡No hay indicadores pendientes en este momento!</td></tr>`;
+      return;
+    }
+
+    pendientes.forEach(ind => {
+      const idStr = ind.id.toString().trim();
+      const estaIncluido = !idsExcluidosSet.has(idStr);
+
+      tbody.innerHTML += `
+        <tr>
+          <td class="text-center"><input type="checkbox" class="check-alerta-destinatario" value="${idStr}" ${estaIncluido ? 'checked' : ''}></td>
+          <td class="fw-bold text-secondary">${ind.id}</td>
+          <td>${ind.area}</td>
+          <td>${ind.responsable}</td>
+          <td><span class="text-muted" style="font-size:0.75rem;">${ind.correo || 'Sin correo'}</span></td>
+        </tr>
+      `;
+    });
+  }
+
+  function marcarTodosExclusiones(estado) {
+    const checks = document.querySelectorAll('.check-alerta-destinatario');
+    checks.forEach(c => c.checked = estado);
+  }
+
+  function guardarConfiguracionExclusiones() {
+    const checks = document.querySelectorAll('.check-alerta-destinatario');
+    const excluidos = [];
+
+    checks.forEach(c => {
+      if (!c.checked) {
+        excluidos.push(c.value);
+      }
+    });
+
+    mostrarToast("Guardando selección de destinatarios...");
+    google.script.run.withSuccessHandler(res => {
+      if (res.success) {
+        mostrarToast("Selección de destinatarios guardada con éxito.");
+        cargarConfiguracionAlertas();
+      } else {
+        alert("Error al guardar: " + res.error);
+      }
+    }).guardarExclusionesAlertas(excluidos);
+  }
+
+  function toggleTrigger(enable) {
+    google.script.run.withSuccessHandler((response) => {
+      updateToggleUI(response.enabled);
+      mostrarToast(enable ? "Alertas diarias encendidas a las 9 AM." : "Alertas automáticas apagadas.");
+    }).setAlertTrigger(enable);
+  }
+
+  function marcarTodosChecks(master) {
+    const checks = document.querySelectorAll('.check-item');
+    checks.forEach(c => c.checked = master.checked);
+  }
+
+  function obtenerIdsSeleccionados() {
+    const checks = document.querySelectorAll('.check-item:checked');
+    const ids = [];
+    checks.forEach(c => ids.push(c.value));
+    return ids;
+  }
+
+  function abrirEnlaceExternoSeguro(url) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  function filtrarTabla() {
+    const inputBuscador = document.getElementById("buscador").value.toUpperCase();
+    const filtroAnio = document.getElementById("filtro-anio").value;
+    const filtroPeriodo = document.getElementById("filtro-periodo").value;
+    const filtroEstatus = document.getElementById("filtro-estatus").value;
+
+    const tr = document.getElementById("tabla-datos").getElementsByTagName("tr");
+    
+    for (let i = 1; i < tr.length; i++) {
+      const row = tr[i];
+      const tdId = row.getElementsByTagName("td")[1];
+      const tdArea = row.getElementsByTagName("td")[3];
+      const tdEstatus = row.getElementsByTagName("td")[7];
+      
+      const rowAnio = row.getAttribute("data-anio") || "";
+      const rowPeriodo = row.getAttribute("data-periodo") || "";
+
+      let coincideBuscador = true;
+      if (tdId || tdArea) {
+        const txt = (tdId.textContent || "") + " " + (tdArea.textContent || "");
+        coincideBuscador = txt.toUpperCase().indexOf(inputBuscador) > -1;
+      }
+
+      let coincideAnio = !filtroAnio || rowAnio === filtroAnio;
+      let coincidePeriodo = !filtroPeriodo || rowPeriodo === filtroPeriodo;
+
+      let coincideEstatus = true;
+      if (filtroEstatus && tdEstatus) {
+        const txtEstatus = tdEstatus.textContent.trim().toUpperCase();
+        if (filtroEstatus === "2") {
+          coincideEstatus = txtEstatus.includes("CUMPLIDO") || txtEstatus === "2";
+        } else if (filtroEstatus === "1") {
+          coincideEstatus = txtEstatus.includes("REVISIÓN") || txtEstatus.includes("PARCIAL") || txtEstatus === "1";
+        } else if (filtroEstatus === "0") {
+          coincideEstatus = txtEstatus.includes("PENDIENTE") || txtEstatus === "0";
+        }
+      }
+
+      if (coincideBuscador && coincideAnio && coincidePeriodo && coincideEstatus) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    }
+  }
+</script>
+</body>
+</html>

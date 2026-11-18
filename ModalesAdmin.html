@@ -1,0 +1,620 @@
+<!-- MODAL DE PREVISUALIZACIÓN Y DESPACHO CON GMAIL -->
+<div id="emailModal" class="modal fade" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow border-0">
+      <div class="modal-header bg-dark text-white">
+        <h6 class="modal-title fw-bold"><i class="bi bi-envelope-paper-fill me-2 text-warning"></i> Previsualización e Integración con Gmail</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+          <span id="badgeHiloStatus" class="badge bg-info">&#128269; Verificando hilo existente en Gmail...</span>
+          <button type="button" class="btn btn-sm btn-outline-dark fw-bold" onclick="togglePanelBusquedaLibre('panelVerificacionHex')">
+            <i class="bi bi-search me-1"></i> Búsqueda en Vivo de Correos
+          </button>
+        </div>
+
+        <div id="panelVerificacionHex" class="p-3 mb-3 bg-light rounded border d-none">
+          <div class="fw-bold text-dark mb-1" style="font-size:0.82rem;">
+            <i class="bi bi-key-fill text-warning me-1"></i> Propuesta de Correo e Integración Gmail
+          </div>
+          
+          <div id="resumenPropuestaInd" class="text-muted mb-2 p-2 bg-white rounded border" style="font-size:0.75rem;">
+            Cargando propuesta según Trimestre, Área y Responsable...
+          </div>
+
+          <div class="input-group input-group-sm mb-2">
+            <input type="text" id="inputQueryGmailLibre" class="form-control" placeholder="Escribe asunto, remitente o palabras clave...">
+            <button class="btn btn-primary fw-bold" type="button" onclick="ejecutarBusquedaManualGmail('emailIndicadorId', 'panelVerificacionHex')">
+              <i class="bi bi-search me-1"></i> Buscar en Gmail
+            </button>
+          </div>
+
+          <div id="contenidoVerificacionHex" class="small text-muted mb-2">Presiona "Buscar en Gmail" o confirma la propuesta sugerida.</div>
+          
+          <button type="button" id="btnConfirmarHexSheets" class="btn btn-sm btn-success fw-bold d-none" onclick="ejecutarConfirmacionHexSheets()">
+            <i class="bi bi-check-circle-fill me-1"></i> Confirmar y Asignar ID Seleccionado en Sheets
+          </button>
+        </div>
+
+        <input type="hidden" id="emailIndicadorId">
+        <input type="hidden" id="emailBodyHtmlHidden">
+
+        <div class="mb-2">
+          <label class="fw-bold small">Para:</label>
+          <input type="email" id="emailTo" class="form-control form-control-sm">
+        </div>
+        <div class="mb-2">
+          <label class="fw-bold small">CC:</label>
+          <input type="text" id="emailCc" class="form-control form-control-sm">
+        </div>
+        <div class="mb-2">
+          <label class="fw-bold small">Asunto:</label>
+          <input type="text" id="emailSubject" class="form-control form-control-sm">
+        </div>
+        <div class="mb-2">
+          <label class="fw-bold small text-secondary">Previsualización del Correo (HTML):</label>
+          <div id="emailPreviewContainer" class="p-2 border rounded shadow-sm" style="max-height: 320px; overflow-y: auto; background: #f4f6f9;"></div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light py-2">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-sm btn-danger fw-bold" onclick="enviarCorreoConfirmado()"><i class="bi bi-send-fill me-1"></i> Despachar Correo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EVALUAR ESTATUS -->
+<div id="modalEnviarEstatus" class="modal fade" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-dark text-white">
+        <h6 class="modal-title fw-bold"><i class="bi bi-envelope-paper-fill text-warning me-2"></i> Vista Previa y Envío de Estatus ASG</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+          <span id="badgeHiloStatusEstatus" class="badge bg-info">&#128269; Verificando hilo existente en Gmail...</span>
+          <button type="button" class="btn btn-sm btn-outline-dark fw-bold" onclick="togglePanelBusquedaLibre('panelVerificacionHexEstatus')">
+            <i class="bi bi-search me-1"></i> Búsqueda en Vivo de Correos
+          </button>
+        </div>
+
+        <div id="panelVerificacionHexEstatus" class="p-3 mb-3 bg-light rounded border d-none">
+          <div class="fw-bold text-dark mb-1" style="font-size:0.82rem;">
+            <i class="bi bi-key-fill text-warning me-1"></i> Propuesta de Correo e Integración Gmail
+          </div>
+
+          <div id="resumenPropuestaIndEstatus" class="text-muted mb-2 p-2 bg-white rounded border" style="font-size:0.75rem;">
+            Cargando propuesta según Trimestre, Área y Responsable...
+          </div>
+
+          <div class="input-group input-group-sm mb-2">
+            <input type="text" id="inputQueryGmailLibreEstatus" class="form-control" placeholder="Escribe asunto, remitente o palabras clave...">
+            <button class="btn btn-primary fw-bold" type="button" onclick="ejecutarBusquedaManualGmail('m-estatus-id', 'panelVerificacionHexEstatus')">
+              <i class="bi bi-search me-1"></i> Buscar en Gmail
+            </button>
+          </div>
+
+          <div id="contenidoVerificacionHexEstatus" class="small text-muted mb-2">Presiona "Buscar en Gmail" o confirma la propuesta sugerida.</div>
+
+          <button type="button" id="btnConfirmarHexSheetsEstatus" class="btn btn-sm btn-success fw-bold d-none" onclick="ejecutarConfirmacionHexSheetsEstatus()">
+            <i class="bi bi-check-circle-fill me-1"></i> Confirmar y Asignar ID Seleccionado en Sheets
+          </button>
+        </div>
+        
+        <input type="hidden" id="m-estatus-id">
+        <input type="hidden" id="m-estatus-val">
+        <input type="hidden" id="m-es-agrupado" value="false">
+        
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary" style="font-size:0.75rem;">NOMBRE DEL RESPONSABLE</label>
+            <input type="text" id="m-estatus-responsable" class="form-control form-control-sm" oninput="actualizarPreviewEstatusHtml()">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary" style="font-size:0.75rem;">PARA (DESTINATARIO)</label>
+            <input type="email" id="m-estatus-para" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-12">
+            <label class="form-label fw-bold text-secondary" style="font-size:0.75rem;">EN COPIA (CC)</label>
+            <input type="text" id="m-estatus-cc" class="form-control form-control-sm">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold text-secondary" style="font-size:0.75rem;">ASUNTO DEL CORREO</label>
+            <input type="text" id="m-estatus-asunto" class="form-control form-control-sm">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold text-secondary" style="font-size:0.75rem;">MENSAJE ADICIONAL / OBSERVACIONES</label>
+            <textarea id="m-estatus-mensaje" class="form-control form-control-sm" rows="3" oninput="actualizarPreviewEstatusHtml()"></textarea>
+          </div>
+          <div class="col-12 mt-3">
+            <label class="form-label fw-bold text-secondary" style="font-size:0.75rem;">PREVISUALIZACIÓN DEL CORREO (HTML)</label>
+            <div id="m-estatus-preview" class="p-3 border rounded shadow-sm" style="max-height: 280px; overflow-y: auto; background: #ffffff;"></div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-sm btn-light border" onclick="omitirEnvioCorreoEstatus()">Cambiar Estatus Sin Enviar Correo</button>
+          <button type="button" class="btn btn-sm btn-success fw-bold px-4" onclick="confirmarEnvioEstatusPersonalizado()">
+            <i class="bi bi-send-fill me-1"></i> Actualizar Estatus y Enviar Correo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER NOTAS Y COMENTARIOS -->
+<div class="modal fade" id="modalVerNotas" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow border-0">
+      <div class="modal-header bg-dark text-white">
+        <h6 class="modal-title fw-bold"><i class="bi bi-chat-left-text-fill me-2 text-warning"></i> Comentarios / Notas de Sustento</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4" id="modal-body-notas"></div>
+      <div class="modal-footer bg-light py-2">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CARGA MANUAL -->
+<div class="modal fade" id="modalCargaManual" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-bold" id="manual-title">Carga Manual Excepcional</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="manual-id">
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary" style="font-size:0.75rem;">URL DE LA EVIDENCIA</label>
+          <input type="url" id="manual-url" class="form-control form-control-sm" placeholder="https://...">
+        </div>
+        <button type="button" class="btn btn-sm btn-success w-100 fw-bold" onclick="guardarEvidenciaManual()">Insertar Sustento</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let tempHexIdEncontrado = "";
+  let tempHexIdEncontradoEstatus = "";
+
+  function togglePanelBusquedaLibre(panelId) {
+    const panel = document.getElementById(panelId);
+    panel.classList.toggle('d-none');
+  }
+
+  function cargarPropuestaCorreoModal(id, esEstatus) {
+    google.script.run
+      .withSuccessHandler(prop => {
+        const inputQuery = document.getElementById(esEstatus ? 'inputQueryGmailLibreEstatus' : 'inputQueryGmailLibre');
+        const resumen = document.getElementById(esEstatus ? 'resumenPropuestaIndEstatus' : 'resumenPropuestaInd');
+
+        if (inputQuery) inputQuery.value = prop.querySugerido;
+        if (resumen) {
+          const infoThread = prop.threadIdGuardado ? ` | ID Hilo Guardado: <b>${prop.threadIdGuardado}</b>` : '';
+          resumen.innerHTML = `
+            <strong>Propuesta para ID [${prop.idIndicador || id}]:</strong><br>
+            • Periodo: <b>${prop.periodo}</b> | Área: <b>${prop.area}</b><br>
+            • Responsable: <b>${prop.responsable}</b> | Correo: <b>${prop.correo || 'N/A'}</b>${infoThread}
+          `;
+        }
+
+        if (prop.querySugerido) {
+          ejecutarBusquedaManualGmail(esEstatus ? 'm-estatus-id' : 'emailIndicadorId', esEstatus ? 'panelVerificacionHexEstatus' : 'panelVerificacionHex');
+        }
+      })
+      .obtenerPropuestaBusquedaCorreo(id);
+  }
+
+  function abrirPrevisualizacionCorreo(id, tipoAccion) {
+    document.getElementById('emailIndicadorId').value = id;
+    document.getElementById('badgeHiloStatus').innerHTML = "&#128269; Verificando hilo existente en Gmail...";
+    document.getElementById('panelVerificacionHex').classList.remove('d-none');
+
+    cargarPropuestaCorreoModal(id, false);
+
+    google.script.run
+      .withSuccessHandler(data => {
+        document.getElementById('emailTo').value = data.para;
+        document.getElementById('emailCc').value = data.cc || "";
+        document.getElementById('emailSubject').value = data.asunto;
+        
+        document.getElementById('emailBodyHtmlHidden').value = data.mensajeHtml;
+        document.getElementById('emailPreviewContainer').innerHTML = data.mensajeHtml;
+
+        const badge = document.getElementById('badgeHiloStatus');
+        if (data.esHiloExistente) {
+          badge.className = "badge bg-success";
+          badge.innerHTML = "&#129525; Responderá sobre el Hilo existente en Gmail";
+        } else {
+          badge.className = "badge bg-info";
+          badge.innerHTML = "&#128231; Se iniciará una nueva conversación en Gmail";
+        }
+
+        new bootstrap.Modal(document.getElementById('emailModal')).show();
+      })
+      .obtenerDatosParaPrevisualizacion(id, tipoAccion);
+  }
+
+  function ejecutarBusquedaManualGmail(idInputTarget, panelId) {
+    const esEstatus = (idInputTarget === 'm-estatus-id');
+    const inputQuery = document.getElementById(esEstatus ? 'inputQueryGmailLibreEstatus' : 'inputQueryGmailLibre').value;
+    const contenido = document.getElementById(esEstatus ? 'contenidoVerificacionHexEstatus' : 'contenidoVerificacionHex');
+    const btnConfirmar = document.getElementById(esEstatus ? 'btnConfirmarHexSheetsEstatus' : 'btnConfirmarHexSheets');
+
+    if (!inputQuery || inputQuery.trim() === "") {
+      alert("Por favor ingresa un término de búsqueda.");
+      return;
+    }
+
+    contenido.innerHTML = "🔍 Buscando en tu bandeja de Gmail...";
+    btnConfirmar.classList.add('d-none');
+
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.encontrado && res.resultados && res.resultados.length > 0) {
+          let htmlResultados = `<div class="list-group mt-2">`;
+          
+          res.resultados.forEach((item, index) => {
+            htmlResultados += `
+              <label class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-2" style="cursor:pointer;">
+                <div>
+                  <input class="form-check-input me-2" type="radio" name="radioGmailHex" value="${item.idHex}" ${index === 0 ? 'checked' : ''} onchange="seleccionarHexRadio('${item.idHex}', '${idInputTarget}')">
+                  <strong>${item.asunto}</strong>
+                  <span class="badge bg-secondary ms-1">${item.totalRespuestas || 1} msj(s)</span><br>
+                  <small class="text-muted">Último mensaje de: ${item.de} | ${item.fecha}</small>
+                </div>
+                <span class="badge bg-dark">${item.idHex}</span>
+              </label>
+            `;
+          });
+          
+          htmlResultados += `</div>`;
+          contenido.innerHTML = htmlResultados;
+
+          if (esEstatus) tempHexIdEncontradoEstatus = res.resultados[0].idHex;
+          else tempHexIdEncontrado = res.resultados[0].idHex;
+
+          btnConfirmar.classList.remove('d-none');
+        } else {
+          contenido.innerHTML = `<span class="text-danger">❌ ${res.mensaje || "No se encontraron correos."}</span>`;
+        }
+      })
+      .buscarCorreosLibreGmail(inputQuery);
+  }
+
+  function seleccionarHexRadio(idHex, idInputTarget) {
+    if (idInputTarget === 'm-estatus-id') {
+      tempHexIdEncontradoEstatus = idHex;
+    } else {
+      tempHexIdEncontrado = idHex;
+    }
+  }
+
+  function ejecutarConfirmacionHexSheets() {
+    const idInd = document.getElementById('emailIndicadorId').value;
+    if (!tempHexIdEncontrado) return;
+
+    mostrarToast("Guardando ID Hexadecimal en Sheets...");
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.success) {
+          mostrarToast("✅ ID Hex " + res.idHex + " registrado exitosamente.");
+          document.getElementById('badgeHiloStatus').className = "badge bg-success";
+          document.getElementById('badgeHiloStatus').innerHTML = "&#129525; Hilo Confirmado y Vinculado en Sheets";
+          cargarDashboardAdmin();
+        } else {
+          alert("Error al guardar: " + res.error);
+        }
+      })
+      .confirmarYGuardarEnSheets(tempHexIdEncontrado, idInd);
+  }
+
+  function ejecutarConfirmacionHexSheetsEstatus() {
+    const idInd = document.getElementById('m-estatus-id').value;
+    if (!tempHexIdEncontradoEstatus) return;
+
+    mostrarToast("Guardando ID Hexadecimal en Sheets...");
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.success) {
+          mostrarToast("✅ ID Hex registrado en Sheets.");
+          document.getElementById('badgeHiloStatusEstatus').className = "badge bg-success";
+          document.getElementById('badgeHiloStatusEstatus').innerHTML = "&#129525; Hilo Confirmado y Vinculado en Sheets";
+          cargarDashboardAdmin();
+        } else {
+          alert("Error al guardar: " + res.error);
+        }
+      })
+      .confirmarYGuardarEnSheets(tempHexIdEncontradoEstatus, idInd);
+  }
+
+  function enviarCorreoConfirmado() {
+    const idInd = document.getElementById('emailIndicadorId').value;
+    const datos = {
+      idIndicador: idInd,
+      para: document.getElementById('emailTo').value,
+      cc: document.getElementById('emailCc').value,
+      asunto: document.getElementById('emailSubject').value,
+      mensajeHtml: document.getElementById('emailBodyHtmlHidden').value
+    };
+
+    if (!datos.para) {
+      alert("Por favor ingresa una dirección de correo de destino.");
+      return;
+    }
+
+    mostrarToast("Despachando correo y acoplando a hilo...");
+    google.script.run.withSuccessHandler((res) => {
+      if (res && res.success) {
+        bootstrap.Modal.getInstance(document.getElementById('emailModal')).hide();
+        mostrarToast("Correo despachado y agrupado correctamente.");
+        cargarDashboardAdmin();
+      } else {
+        alert("Error al enviar el correo: " + (res ? res.error : "Error desconocido"));
+      }
+    }).enviarOResponderCorreoASG(datos);
+  }
+
+  function solicitarEnvioAlerta(id) {
+    abrirPrevisualizacionCorreo(id, "ALERTA_INDIVIDUAL");
+  }
+
+  function ejecutarSeguimientoTempranoUnico(id) {
+    abrirPrevisualizacionCorreo(id, "SEGUIMIENTO_TEMPRANO");
+  }
+
+  function abrirModalVistaPreviaEstatus(id, valorEstatus) {
+    if (!valorEstatus) return;
+
+    const ind = cacheIndicadores.find(x => x.id.toString().trim() === id.toString().trim());
+    if (!ind) return alert("No se encontraron los datos del indicador");
+
+    document.getElementById('m-es-agrupado').value = "false";
+    document.getElementById('m-estatus-id').value = id;
+    document.getElementById('m-estatus-val').value = valorEstatus;
+    document.getElementById('panelVerificacionHexEstatus').classList.remove('d-none');
+
+    cargarPropuestaCorreoModal(id, true);
+
+    const primerNombre = (ind.responsable || "").trim().split(" ")[0] || "Responsable";
+    document.getElementById('m-estatus-responsable').value = primerNombre;
+    
+    const badge = document.getElementById('badgeHiloStatusEstatus');
+    if (badge) {
+      badge.className = "badge bg-info";
+      badge.innerHTML = "&#128269; Verificando hilo existente en Gmail...";
+    }
+
+    google.script.run
+      .withSuccessHandler(data => {
+        document.getElementById('m-estatus-para').value = data.para || "";
+        document.getElementById('m-estatus-cc').value = data.cc || "";
+        document.getElementById('m-estatus-asunto').value = data.asunto || "";
+        document.getElementById('m-estatus-mensaje').value = "";
+
+        if (badge) {
+          if (data.esHiloExistente) {
+            badge.className = "badge bg-success";
+            badge.innerHTML = "&#129525; Responderá sobre el Hilo existente en Gmail";
+          } else {
+            badge.className = "badge bg-info";
+            badge.innerHTML = "&#128231; Se iniciará una nueva conversación en Gmail";
+          }
+        }
+
+        actualizarPreviewEstatusHtml();
+        new bootstrap.Modal(document.getElementById('modalEnviarEstatus')).show();
+      })
+      .obtenerDatosParaPrevisualizacion(id, "EVALUAR");
+  }
+
+  function evaluarGrupoSeleccionados() {
+    const ids = obtenerIdsSeleccionados();
+    if (ids.length === 0) return alert("Selecciona al menos 1 indicador mediante la casilla para agrupar.");
+
+    idsGrupoSeleccionados = ids;
+    const listaSeleccionados = cacheIndicadores.filter(x => ids.includes(x.id.toString().trim()));
+    const primerInd = listaSeleccionados[0];
+
+    document.getElementById('m-es-agrupado').value = "true";
+    document.getElementById('m-estatus-id').value = ids.join(",");
+    document.getElementById('m-estatus-val').value = "2";
+
+    cargarPropuestaCorreoModal(primerInd.id, true);
+
+    const primerNombre = (primerInd.responsable || "").trim().split(" ")[0] || "Responsable";
+    document.getElementById('m-estatus-responsable').value = primerNombre;
+
+    google.script.run.withSuccessHandler(mapeoCC => {
+      const destinatario = cacheConfig.modoPrueba ? cacheConfig.correoAdmin : (mapeoCC.correoTo || primerInd.correo);
+      const ccFinal = cacheConfig.modoPrueba ? "" : (mapeoCC.correosCc || "");
+
+      document.getElementById('m-estatus-para').value = destinatario || "";
+      document.getElementById('m-estatus-cc').value = ccFinal || "";
+
+      const prefijo = cacheConfig.modoPrueba ? "[MODO BORRADOR] " : "";
+      document.getElementById('m-estatus-asunto').value = `${prefijo}[ASG] Estatus de Evaluación: Indicadores de Impacto ASG — ${primerInd.area || 'Consolidado'}`;
+      document.getElementById('m-estatus-mensaje').value = "";
+
+      actualizarPreviewEstatusHtml();
+      new bootstrap.Modal(document.getElementById('modalEnviarEstatus')).show();
+    }).obtenerMapeoCCPorId(primerInd.id);
+  }
+
+  function actualizarPreviewEstatusHtml() {
+    const esAgrupado = document.getElementById('m-es-agrupado').value === "true";
+    const rawNom = document.getElementById('m-estatus-responsable').value || 'Responsable';
+    const responsableNom = rawNom.trim().split(" ")[0] || 'Responsable';
+
+    const obs = document.getElementById('m-estatus-mensaje').value;
+    let htmlObs = obs ? `<p style="background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; font-size: 13px; color: #856404; margin-top: 10px;"><strong>Observación:</strong> ${obs}</p>` : '';
+
+    if (!esAgrupado) {
+      const id = document.getElementById('m-estatus-id').value;
+      const valorEstatus = document.getElementById('m-estatus-val').value;
+      const ind = cacheIndicadores.find(x => x.id.toString().trim() === id.toString().trim()) || {};
+
+      let resultado = "CUMPLIDO SATISFACTORIAMENTE";
+      let colorRes = "#2E7D32";
+      
+      if (valorEstatus === "1") {
+        resultado = "CUMPLIDO PARCIALMENTE";
+        colorRes = "#EF6C00";
+      } else if (valorEstatus === "0") {
+        resultado = "PENDIENTE / OBSERVADO";
+        colorRes = "#C62828";
+      }
+
+      const baseRaw = (cacheConfig && cacheConfig.urlManualApp) ? cacheConfig.urlManualApp : "";
+      const baseLinkClean = baseRaw.replace(/['"]/g, '').trim();
+      const urlLevantarObs = `${baseLinkClean}?id=${id}&accion=obs`;
+
+      let htmlBotonLevantarObs = "";
+      if (valorEstatus === "1" || valorEstatus === "0") {
+        htmlBotonLevantarObs = `
+          <p style="text-align: center; margin: 25px 0 10px 0;">
+            <a href="${urlLevantarObs}" target="_blank" style="background-color: #FF6568; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 13.5px; box-shadow: 0 2px 5px rgba(255,101,104,0.3);">
+              &#128736;&#65039; Levantar Observación / Adjuntar Nueva Evidencia
+            </a>
+          </p>`;
+      }
+
+      const previewContent = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; border: 1px solid #e1e6eb; border-radius: 6px; background: #ffffff; overflow: hidden;">
+        <div style="background-color: #68002B; padding: 18px; text-align: center;">
+          <div style="background-color: #ffffff; padding: 6px 14px; border-radius: 6px; display: inline-block;">
+            <img src="https://lh3.googleusercontent.com/d/1elH2pM7BNNj7ZkmfsxHFI2nLDhLQ4WPF" alt="Logo Sharf" style="max-height: 38px; width: auto; display: block;" onerror="this.style.display='none'">
+          </div>
+        </div>
+          <div style="padding: 20px; color: #222222; background-color: #ffffff;">
+            <p style="font-size: 13.5px; margin-bottom: 12px; color: #333333;">Hola <strong>${responsableNom}</strong>,</p>
+            <p style="font-size: 13.5px; margin-bottom: 12px; color: #333333;">Te informamos el estatus de evaluación de tus indicadores asignados al área de <strong>${ind.area || ''}</strong>:</p>
+            
+            <div style="background-color: #f8f9fa; padding: 12px; border-radius: 5px; border: 1px solid #e0e0e0; margin: 15px 0;">
+              <p style="margin: 0 0 6px 0; font-size: 13px;"><b>Indicador:</b> ${ind.indicador || ''}</p>
+              <p style="margin: 0 0 6px 0; font-size: 13px;"><b>Meta definida:</b> ${ind.meta || '-'}</p>
+            </div>
+
+            <div style="background: #fdf8f9; padding: 12px; border-left: 4px solid ${colorRes}; margin: 12px 0; border-radius: 4px; font-size: 13.5px;">
+              <strong>Resultado:</strong> <span style="color: ${colorRes}; font-weight: bold;">${resultado}</span>
+            </div>
+            ${htmlObs}
+            ${htmlBotonLevantarObs}
+          </div>
+        </div>`;
+
+      document.getElementById('m-estatus-preview').innerHTML = previewContent;
+    }
+  }
+
+  function confirmarEnvioEstatusPersonalizado() {
+    const esAgrupado = document.getElementById('m-es-agrupado').value === "true";
+    let para = document.getElementById('m-estatus-para').value;
+    let cc = document.getElementById('m-estatus-cc').value;
+    const asunto = document.getElementById('m-estatus-asunto').value;
+    const mensajeHtml = document.getElementById('m-estatus-preview').innerHTML;
+    const id = document.getElementById('m-estatus-id').value;
+
+    if (!para) {
+      alert("Por favor verifica la dirección de destino (PARA).");
+      return;
+    }
+
+    mostrarToast("Guardando estatus y enviando correo...");
+
+    if (!esAgrupado) {
+      const nuevoEstatus = document.getElementById('m-estatus-val').value;
+
+      google.script.run.withSuccessHandler(res => {
+        google.script.run.withSuccessHandler(() => {
+          bootstrap.Modal.getInstance(document.getElementById('modalEnviarEstatus')).hide();
+          mostrarToast("Evaluación guardada y correo agrupado con éxito.");
+          cargarDashboardAdmin();
+        }).enviarCorreoEstatusPersonalizado(para, cc, asunto, mensajeHtml, id);
+      }).actualizarEstatusAdmin(id, nuevoEstatus);
+    } else {
+      const ids = idsGrupoSeleccionados;
+      const nuevoEstatus = document.getElementById('m-estatus-val').value;
+
+      google.script.run.withSuccessHandler(res => {
+        google.script.run.withSuccessHandler(() => {
+          bootstrap.Modal.getInstance(document.getElementById('modalEnviarEstatus')).hide();
+          mostrarToast("Grupo evaluado y correo agrupado con éxito.");
+          cargarDashboardAdmin();
+        }).enviarCorreoEstatusPersonalizado(para, cc, asunto, mensajeHtml, ids[0]);
+      }).actualizarEstatusMultiples(ids, nuevoEstatus);
+    }
+  }
+
+  function omitirEnvioCorreoEstatus() {
+    const esAgrupado = document.getElementById('m-es-agrupado').value === "true";
+
+    if (!esAgrupado) {
+      const id = document.getElementById('m-estatus-id').value;
+      const nuevoEstatus = document.getElementById('m-estatus-val').value;
+
+      google.script.run.withSuccessHandler(res => {
+        bootstrap.Modal.getInstance(document.getElementById('modalEnviarEstatus')).hide();
+        mostrarToast("Estatus actualizado correctamente.");
+        cargarDashboardAdmin();
+      }).actualizarEstatusAdmin(id, nuevoEstatus);
+    } else {
+      const ids = idsGrupoSeleccionados;
+      const nuevoEstatus = document.getElementById('m-estatus-val').value;
+
+      google.script.run.withSuccessHandler(res => {
+        bootstrap.Modal.getInstance(document.getElementById('modalEnviarEstatus')).hide();
+        mostrarToast("Indicadores actualizados correctamente.");
+        cargarDashboardAdmin();
+      }).actualizarEstatusMultiples(ids, nuevoEstatus);
+    }
+  }
+
+  function abrirModalVerNotas(id) {
+    const notas = cacheNotasMap[id] || [];
+    const container = document.getElementById('modal-body-notas');
+    
+    if (notas.length === 0) {
+      container.innerHTML = `<div class="text-center text-muted py-3">No hay comentarios registrados.</div>`;
+    } else {
+      let html = `<div class="mb-2 text-muted fw-bold" style="font-size:0.75rem;">SE ENCONTRARON ${notas.length} NOTA(S) / COMENTARIOS:</div>`;
+      notas.forEach((nota, index) => {
+        html += `
+          <div class="p-2 mb-2 bg-light border-start border-warning border-4 rounded">
+            <div class="fw-bold text-warning-emphasis" style="font-size:0.75rem;">Nota #${index + 1}</div>
+            <div style="font-size:0.85rem;">${nota}</div>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    new bootstrap.Modal(document.getElementById('modalVerNotas')).show();
+  }
+
+  function abrirModalManual(id) {
+    document.getElementById('manual-id').value = id;
+    document.getElementById('manual-title').innerText = "Carga Excepcional - ID " + id;
+    document.getElementById('manual-url').value = "";
+    new bootstrap.Modal(document.getElementById('modalCargaManual')).show();
+  }
+
+  function guardarEvidenciaManual() {
+    const id = document.getElementById('manual-id').value;
+    const url = document.getElementById('manual-url').value;
+    if(!url) return alert("Ingresa un link válido");
+    
+    google.script.run.withSuccessHandler(res => {
+      bootstrap.Modal.getInstance(document.getElementById('modalCargaManual')).hide();
+      mostrarToast("Evidencia cargada por el administrador.");
+      cargarDashboardAdmin();
+    }).subirEvidenciaManualAdmin(id, url);
+  }
+</script>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Carga de Sustentos ASG | Shārf</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    :root { --sharf-dark: #68002B; --sharf-light: #FF6568; }
+    body { background-color: #f4f6f9; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px 15px; }
+    .user-card { border: 1px solid #e1e6eb; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); overflow: hidden; background: #ffffff; width: 100%; max-width: 530px; }
+    .user-header { background: var(--sharf-dark); color: white; padding: 22px 20px 18px 20px; text-align: center; }
+    .logo-container-header { display: inline-block; padding: 6px 14px; margin-bottom: 8px; background-color: #ffffff; border-radius: 6px; }
+    .btn-submit { background: var(--sharf-light); color: white; font-weight: bold; padding: 12px; border-radius: 6px; border: none; transition: 0.3s; font-size: 0.95rem; }
+    .btn-submit:hover { background-color: #e05558; }
+    .btn-submit:disabled { opacity: 0.85; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<div class="user-card">
+  <div class="user-header">
+    <div class="logo-container-header">
+      <img src="https://lh3.googleusercontent.com/d/1elH2pM7BNNj7ZkmfsxHFI2nLDhLQ4WPF" alt="Logo Shārf" style="max-height: 38px; width: auto; display: block;" onerror="this.style.display='none'">
+    </div>
+    <h4 class="fw-bold m-0" style="font-size: 1.2rem; letter-spacing: 0.5px; opacity: 0.9;">Sustento ASG</h4>
+  </div>
+  
+  <div class="p-4" id="form-container">
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+      <div>
+        <span class="badge bg-secondary mb-1" id="u-id">...</span><br>
+        <span class="fw-bold text-dark" id="u-area" style="font-size:0.95rem;">Cargando...</span>
+      </div>
+      <div class="text-end text-muted" style="font-size:0.8rem;">
+        <i class="bi bi-person-circle"></i> <span id="u-responsable">...</span>
+      </div>
+    </div>
+
+    <div class="mb-4 p-3 bg-light rounded border shadow-sm">
+      <div class="mb-2">
+        <label class="form-label text-muted fw-bold mb-0" style="font-size: 0.7rem; text-transform: uppercase;">Indicador:</label>
+        <div class="fw-bold text-dark" id="u-indicador-texto" style="font-size:0.92rem;">Cargando...</div>
+      </div>
+      
+      <div class="mb-2">
+        <label class="form-label text-muted fw-bold mb-0" style="font-size: 0.7rem; text-transform: uppercase;">Meta asignada:</label>
+        <div class="fw-bold text-dark" id="u-meta-texto" style="font-size:0.88rem;">Cargando...</div>
+      </div>
+      
+      <div class="mb-2">
+        <label class="form-label text-muted fw-bold mb-0" style="font-size: 0.7rem; text-transform: uppercase;">Subindicador:</label>
+        <div class="fw-bold text-dark" id="u-subindicador-texto" style="font-size:0.88rem;">Cargando...</div>
+      </div>
+      
+      <button type="button" id="btn-modificar-indicador" class="btn btn-sm btn-outline-danger w-100 fw-bold mt-2" onclick="abrirModalModificarManual()">
+        <i class="bi bi-pencil-square me-1"></i> Tengo otro indicador
+      </button>
+    </div>
+
+    <form id="formUsuario">
+      <input type="hidden" id="u-nuevo-indicador">
+      <input type="hidden" id="u-meta">
+      <input type="hidden" id="u-nuevo-subindicador">
+
+      <div class="mb-3">
+        <label class="form-label fw-bold text-secondary" style="font-size: 0.75rem;">EVIDENCIA / SUSTENTO EN TEXTO</label>
+        <textarea class="form-control form-control-sm" id="u-sustento-texto" rows="3" placeholder="Ingresa los detalles del avance..."></textarea>
+        <span class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-mic-fill text-danger me-1"></i> Dictado por voz: Presiona <strong>Windows + H</strong></span>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label fw-bold text-secondary" style="font-size: 0.75rem;">SUBIR ARCHIVO DE SUSTENTO</label>
+        <input type="file" class="form-control form-control-sm" id="u-file">
+      </div>
+      
+      <div class="text-center my-2 text-muted fw-bold" style="font-size:0.68rem;">O PEGAR ENLACE DIRECTO (DRIVE / SHAREPOINT)</div>
+      
+      <div class="mb-4">
+        <input type="url" class="form-control form-control-sm" id="u-link" placeholder="https://...">
+      </div>
+      
+      <button type="submit" class="btn-submit w-100 shadow-sm" id="u-btn">
+        <span id="u-btn-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+        <span id="u-btn-icon"><i class="bi bi-cloud-arrow-up-fill me-2"></i></span>
+        <span id="u-btn-text">ENVIAR EVIDENCIA</span>
+      </button>
+
+      <button type="button" class="btn btn-sm btn-outline-warning w-100 fw-bold mt-2 text-dark" onclick="abrirModalLevantarObsDirecto()">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i> Levantar Observación
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL MODIFICAR INDICADOR PARA EL USUARIO -->
+<div class="modal fade" id="modalNuevoIndicador" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow border-0">
+      <div class="modal-header" style="background-color: #68002B; color: white;">
+        <h6 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2 text-warning"></i> Definir / Ajustar Información</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary" style="font-size: 0.75rem;">NOMBRE DEL INDICADOR</label>
+          <textarea class="form-control form-control-sm" id="m-nuevo-indicador" rows="2"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary" style="font-size: 0.75rem;">META ASIGNADA</label>
+          <input type="text" class="form-control form-control-sm" id="m-nueva-meta">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary" style="font-size: 0.75rem;">SUBINDICADOR</label>
+          <input type="text" class="form-control form-control-sm" id="m-nuevo-subindicador">
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-sm btn-danger fw-bold" onclick="confirmarCamposManualesModal()">Guardar y Aplicar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LEVANTAMIENTO DE OBSERVACIÓN POR EL USUARIO -->
+<div class="modal fade" id="modalLevantarObservacion" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: #68002B; color: white;">
+        <h6 class="modal-title fw-bold"><i class="bi bi-chat-left-dots-fill me-2 text-warning"></i> Levantamiento de Observación</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="obs-id">
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary" style="font-size:0.75rem;">DETALLE DE LA SUBSANACIÓN / OBSERVACIÓN</label>
+          <textarea class="form-control form-control-sm" id="obs-texto" rows="4" placeholder="Ingresa los detalles para levantar la observación..."></textarea>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-sm btn-warning fw-bold text-dark" onclick="ejecutarLevantarObservacion()">Guardar Subsanación</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const idParam = "<?= idParam ?>";
+  const accionParam = "<?= accionParam ?>";
+
+  window.onload = () => {
+    if (idParam && typeof google !== 'undefined' && google.script) {
+      google.script.run.withSuccessHandler(renderizarUsuario).getDatosIndicador(idParam);
+    }
+  };
+
+  function renderizarUsuario(d) {
+    if(!d) {
+      document.getElementById('form-container').innerHTML = "<div class='alert alert-danger text-center'>ID de indicador no válido</div>";
+      return;
+    }
+    document.getElementById('u-id').innerText = d.id;
+    document.getElementById('u-area').innerText = d.area;
+    document.getElementById('u-responsable').innerText = d.responsable;
+    
+    const indTxt = d.indicador ? d.indicador.toString().trim() : "Por confirmar";
+    const metaTxt = d.meta ? d.meta.toString().trim() : "Por confirmar";
+    const subTxt = d.subIndicador ? d.subIndicador.toString().trim() : "Por confirmar";
+
+    document.getElementById('u-indicador-texto').innerText = indTxt || "Por confirmar";
+    document.getElementById('u-meta-texto').innerText = metaTxt || "Por confirmar";
+    document.getElementById('u-subindicador-texto').innerText = subTxt || "Por confirmar";
+
+    document.getElementById('u-nuevo-indicador').value = d.indicador || "";
+    document.getElementById('u-meta').value = d.meta || "";
+    document.getElementById('u-nuevo-subindicador').value = d.subIndicador || "";
+
+    if (accionParam === 'obs') {
+      setTimeout(() => { abrirModalLevantarObsDirecto(); }, 400);
+    } else if (accionParam === 'modificar') {
+      setTimeout(() => { abrirModalModificarManual(); }, 400);
+    }
+  }
+
+  function abrirModalModificarManual() {
+    document.getElementById('m-nuevo-indicador').value = document.getElementById('u-nuevo-indicador').value;
+    document.getElementById('m-nueva-meta').value = document.getElementById('u-meta').value;
+    document.getElementById('m-nuevo-subindicador').value = document.getElementById('u-nuevo-subindicador').value;
+    new bootstrap.Modal(document.getElementById('modalNuevoIndicador')).show();
+  }
+
+  function confirmarCamposManualesModal() {
+    const indVal = document.getElementById('m-nuevo-indicador').value;
+    const metaVal = document.getElementById('m-nueva-meta').value;
+    const subVal = document.getElementById('m-nuevo-subindicador').value;
+
+    document.getElementById('u-nuevo-indicador').value = indVal;
+    document.getElementById('u-meta').value = metaVal;
+    document.getElementById('u-nuevo-subindicador').value = subVal;
+
+    document.getElementById('u-indicador-texto').innerText = indVal || "Por confirmar";
+    document.getElementById('u-meta-texto').innerText = metaVal || "Por confirmar";
+    document.getElementById('u-subindicador-texto').innerText = subVal || "Por confirmar";
+
+    bootstrap.Modal.getInstance(document.getElementById('modalNuevoIndicador')).hide();
+  }
+
+  document.getElementById('formUsuario').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('u-btn');
+    btn.disabled = true;
+    
+    document.getElementById('u-btn-icon').classList.add('d-none');
+    document.getElementById('u-btn-spinner').classList.remove('d-none');
+    document.getElementById('u-btn-text').innerText = "Estamos cargando tu evidencia...";
+
+    const file = document.getElementById('u-file').files[0];
+    const data = {
+      id: idParam,
+      nuevoIndicador: document.getElementById('u-nuevo-indicador').value,
+      nuevaMeta: document.getElementById('u-meta').value,
+      nuevoSubindicador: document.getElementById('u-nuevo-subindicador').value,
+      sustentoTexto: document.getElementById('u-sustento-texto').value,
+      linkAlternativo: document.getElementById('u-link').value
+    };
+
+    if(file) {
+      if (file.size > 8 * 1024 * 1024) {
+        alert("El archivo es mayor a 8 MB. Sube un archivo más liviano o pega un link.");
+        btn.disabled = false;
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        data.archivoData = evt.target.result.split(',')[1];
+        data.archivoType = file.type;
+        data.archivoName = file.name;
+        ejecutarEnvio(data);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      ejecutarEnvio(data);
+    }
+  });
+
+  function ejecutarEnvio(payload) {
+    google.script.run.withSuccessHandler(res => {
+      if(res && res.success) {
+        document.getElementById('form-container').innerHTML = `
+          <div class="text-center py-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 3.5rem;"></i>
+            <h5 class="mt-3 fw-bold text-dark" style="font-size: 1.1rem; line-height: 1.5;">
+              Gracias por subir tu evidencia, te estaremos enviando un correo de validación de tu indicador o solicitud de nueva evidencia.
+            </h5>
+          </div>`;
+      } else {
+        alert("Ocurrió un error al procesar el envío: " + (res ? res.error : "Error desconocido"));
+      }
+    }).procesarEvidencia(payload);
+  }
+
+  function abrirModalLevantarObsDirecto() {
+    document.getElementById('obs-id').value = idParam;
+    document.getElementById('obs-texto').value = "";
+    new bootstrap.Modal(document.getElementById('modalLevantarObservacion')).show();
+  }
+
+  function ejecutarLevantarObservacion() {
+    const id = document.getElementById('obs-id').value;
+    const obs = document.getElementById('obs-texto').value;
+
+    if (!obs || obs.trim() === "") return alert("Ingresa el detalle de subsanación.");
+
+    google.script.run.withSuccessHandler(res => {
+      if (res && res.success) {
+        bootstrap.Modal.getInstance(document.getElementById('modalLevantarObservacion')).hide();
+        alert("Subsanación registrada correctamente.");
+      } else {
+        alert("Error: " + (res ? res.error : "No se pudo registrar la subsanación."));
+      }
+    }).guardarObservacion(id, obs);
+  }
+</script>
+</body>
+</html>
