@@ -192,10 +192,14 @@ function generarHtmlTarjetaCorreo(ind, config, esSeguimiento) {
   const anioEvaluar = ind.anio || "2026";
 
   let mensajeIntroductorio = "";
+  let textoBoton = "";
+
   if (esSeguimiento) {
-    mensajeIntroductorio = `Puedes ir cargando las evidencias correspondientes a <strong>${qEvaluar}</strong> para tu indicador de impacto asignado. A continuación, te mostramos la información registrada:`;
+    mensajeIntroductorio = `Puedes ir cargando las evidencias correspondientes al <strong>${qEvaluar}</strong> para tu indicador de impacto. A continuación, te mostramos el detalle:`;
+    textoBoton = `&#128640; Carga avance / Tengo otro indicador`;
   } else {
     mensajeIntroductorio = `Es momento de registrar las evidencias correspondientes a <strong>${qEvaluar}</strong> para tu indicador de impacto asignado. A continuación, te mostramos la información registrada:`;
+    textoBoton = `&#128640; Subir mi Evidencia`;
   }
 
   return `
@@ -228,12 +232,16 @@ function generarHtmlTarjetaCorreo(ind, config, esSeguimiento) {
               <tr><td style="padding: 10px 16px; font-size: 14px; color: #555555;"><strong>Subindicador:</strong></td><td style="padding: 10px 16px; font-size: 14px; color: #222222;">${ind.subIndicador || 'Por confirmar'}</td></tr>
             </table>
 
-            <div style="background-color: #fff9e6; border: 1px solid #ffe8a1; border-radius: 6px; padding: 12px 16px; margin: 22px 0; font-size: 13.5px; color: #856404; line-height: 1.4;">
-              &#128204; <strong>Nota importante:</strong> Si los campos de indicador, meta o subindicador figuran como <em>"Por confirmar"</em>, por favor complétalos al registrar tus evidencias.
+            <div style="background-color: #fff9e6; border: 1px solid #ffe8a1; border-radius: 6px; padding: 12px 16px; margin: 22px 0; font-size: 13.5px; color: #856404; line-height: 1.5;">
+              <div style="margin-bottom: 6px;">&#128204; <strong>Nota importante:</strong></div>
+              <ol style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 4px;">Si tienes otra propuesta de indicador, por favor compártenosla para evaluarla y registrarla.</li>
+                <li>Si los campos de indicador, meta o subindicador figuran como <em>"Por confirmar"</em>, por favor complétalos al registrar tus evidencias.</li>
+              </ol>
             </div>
             
             <p style="text-align: center; margin: 28px 0 20px 0;">
-              <a href="${link}" target="_blank" style="background-color: ${CONFIG.COLOR_CORAL}; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 14.5px; box-shadow: 0 3px 6px rgba(255,101,104,0.3);">&#128640; Subir mi Evidencia</a>
+              <a href="${link}" target="_blank" style="background-color: ${CONFIG.COLOR_CORAL}; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 14.5px; box-shadow: 0 3px 6px rgba(255,101,104,0.3);">${textoBoton}</a>
             </p>
           </td>
         </tr>
@@ -277,7 +285,7 @@ function obtenerDatosParaPrevisualizacion(id, tipoAccion) {
   const esSeguimiento = (tipoAccion === "SEGUIMIENTO_TEMPRANO");
 
   if (esSeguimiento) {
-    asunto = `${prefijoBorrador}[ASG] Seguimiento Temprano ${qEvaluar}: Indicadores de Impacto ASG — ${ind.area} [${ind.id}]`;
+    asunto = `${prefijoBorrador}[ASG] Indicadores de Impacto ASG ${qEvaluar} - ${ind.area}`;
   } else if (tipoAccion === "EVALUAR") {
     asunto = `${prefijoBorrador}[ASG] Estatus de Evaluación: Indicadores de Impacto ASG — ${ind.area || ind.indicador}`;
   } else {
@@ -870,7 +878,7 @@ function enviarSeguimientoTempranoUnico(id, correosCC) {
 
   const qEvaluar = obtenerTrimestreEvaluar(ind);
 
-  let asunto = `[ASG] Seguimiento Temprano ${qEvaluar}: Indicadores de Impacto ASG — ${ind.area} [${ind.id}]`;
+  let asunto = `[ASG] Indicadores de Impacto ASG ${qEvaluar} - ${ind.area}`;
   if (dataCompletos.config.modoPrueba) {
     asunto = "[MODO BORRADOR] " + asunto;
   }
